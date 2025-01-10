@@ -1,0 +1,269 @@
+{%load static%}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Event Management Dashboard</title>
+    <link rel="stylesheet"  href="{%static 'styles.css'%}">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f9;
+}
+
+.container {
+    width: 80%;
+    margin-top: 20px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+}
+
+input, textarea, select, button {
+    padding: 10px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+#event-list, #attendee-list, #task-list {
+    margin-top: 20px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    background-color: white;
+    padding: 15px;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.list-item:last-child {
+    border-bottom: none;
+}
+
+.list-item button {
+    background-color: #dc3545;
+    color: white;
+    border: none;
+    cursor: pointer;
+    padding: 5px 10px;
+    border-radius: 5px;
+}
+
+.list-item button:hover {
+    background-color: #c82333;
+}
+
+    </style>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+    // Fetch and display events
+    fetchEvents();
+
+    // Event form submission
+    document.getElementById("event-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const name = document.getElementById("event-name").value;
+        const description = document.getElementById("event-description").value;
+        const location = document.getElementById("event-location").value;
+        const date = document.getElementById("event-date").value;
+
+        fetch("/api/events/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, description, location, date }),
+        })
+            .then((response) => response.json())
+            .then(() => {
+                fetchEvents();
+                document.getElementById("event-form").reset();
+            });
+    });
+
+    // Fetch and display attendees
+    fetchAttendees();
+
+    // Attendee form submission
+    document.getElementById("attendee-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const name = document.getElementById("attendee-name").value;
+        const email = document.getElementById("attendee-email").value;
+
+        fetch("/api/attendees/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ name, email }),
+        })
+            .then((response) => response.json())
+            .then(() => {
+                fetchAttendees();
+                document.getElementById("attendee-form").reset();
+            });
+    });
+
+    // Fetch and display tasks
+    fetchTasks();
+
+    // Task form submission
+    document.getElementById("task-form").addEventListener("submit", function (e) {
+        e.preventDefault();
+        const description = document.getElementById("task-description").value;
+        const event = document.getElementById("task-event").value;
+
+        fetch("/api/tasks/", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ description, event }),
+        })
+            .then((response) => response.json())
+            .then(() => {
+                fetchTasks();
+                document.getElementById("task-form").reset();
+            });
+    });
+});
+
+function fetchEvents() {
+    fetch("/api/events/")
+        .then((response) => response.json())
+        .then((events) => {
+            const eventList = document.getElementById("event-list");
+            eventList.innerHTML = events
+                .map(
+                    (event) =>
+                        `<div class="list-item">
+                            <div>
+                                <strong>${event.name}</strong>
+                                <p>${event.description}</p>
+                                <p>${event.location} - ${event.date}</p>
+                            </div>
+                            <button onclick="deleteEvent(${event.id})">Delete</button>
+                        </div>`
+                )
+                .join("");
+        });
+}
+
+function fetchAttendees() {
+    fetch("/api/attendees/")
+        .then((response) => response.json())
+        .then((attendees) => {
+            const attendeeList = document.getElementById("attendee-list");
+            attendeeList.innerHTML = attendees
+                .map(
+                    (attendee) =>
+                        `<div class="list-item">
+                            <div>
+                                <strong>${attendee.name}</strong>
+                                <p>${attendee.email}</p>
+                            </div>
+                            <button onclick="deleteAttendee(${attendee.id})">Delete</button>
+                        </div>`
+                )
+                .join("");
+        });
+}
+
+function fetchTasks() {
+    fetch("/api/tasks/")
+        .then((response) => response.json())
+        .then((tasks) => {
+            const taskList = document.getElementById("task-list");
+            taskList.innerHTML = tasks
+                .map(
+                    (task) =>
+                        `<div class="list-item">
+                            <div>
+                                <strong>${task.description}</strong>
+                                <p>Event: ${task.event.name}</p>
+                                <p>Status: ${task.status}</p>
+                            </div>
+                            <button onclick="updateTask(${task.id})">Mark Completed</button>
+                        </div>`
+                )
+                .join("");
+        });
+}
+
+function deleteEvent(eventId) {
+    fetch(`/api/events/${eventId}/`, { method: "DELETE" }).then(() => fetchEvents());
+}
+
+function deleteAttendee(attendeeId) {
+    fetch(`/api/attendees/${attendeeId}/`, { method: "DELETE" }).then(() => fetchAttendees());
+}
+
+function updateTask(taskId) {
+    fetch(`/api/tasks/${taskId}/`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: "Completed" }),
+    }).then(() => fetchTasks());
+}
+
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>Event Management Dashboard</h1>
+
+        <!-- Event Management Section -->
+        <section id="event-management">
+            <h2>Event Management</h2>
+            <form id="event-form">
+                <input type="text" id="event-name" placeholder="Event Name" required>
+                <textarea id="event-description" placeholder="Event Description" required></textarea>
+                <input type="text" id="event-location" placeholder="Event Location" required>
+                <input type="date" id="event-date" required>
+                <button type="submit">Add Event</button>
+            </form>
+            <div id="event-list"></div>
+        </section>
+
+        <!-- Attendee Management Section -->
+        <section id="attendee-management">
+            <h2>Attendee Management</h2>
+            <form id="attendee-form">
+                <input type="text" id="attendee-name" placeholder="Attendee Name" required>
+                <input type="email" id="attendee-email" placeholder="Attendee Email" required>
+                <button type="submit">Add Attendee</button>
+            </form>
+            <div id="attendee-list"></div>
+        </section>
+
+        <!-- Task Tracker Section -->
+        <section id="task-tracker">
+            <h2>Task Tracker</h2>
+            <form id="task-form">
+                <textarea id="task-description" placeholder="Task Description" required></textarea>
+                <select id="task-event"></select>
+                <button type="submit">Add Task</button>
+            </form>
+            <div id="task-list"></div>
+        </section>
+    </div>
+    <script src="/static/scripts.js"></script>
+</body>
+</html>
