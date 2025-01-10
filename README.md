@@ -59,21 +59,11 @@ Organizations often face difficulties in managing events effectively. The goal o
 - Each task has the following attributes: Name, Deadline, Status (Pending/Completed), and Assigned Attendee.
 - Form inputs are validated for correctness (e.g., no empty fields, valid dates).
 
-## Bonus Features
-1. **Authentication**: Login/logout functionality to access the dashboard.
-2. **Progress Visualization**: Display a progress bar based on task completion (Task Tracker Page).
-3. **Calendar View**: Show events visually in a calendar view.
-4. **Real-Time Updates**: Using WebSockets to dynamically update task progress.
 
-## Project Setup
 
-### Prerequisites
-- Node.js
-- npm (Node package manager)
-- Any text editor (VS Code, Sublime, etc.)
 
 ### Installing Dependencies
 
 1. Clone the repository to your local machine:
    ```bash
-   git clone https://github.com/your-username/event-management-dashboard.git
+   git clone https://github.com/AkashBhalshankar/Webknot.git
